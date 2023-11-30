@@ -1,0 +1,9 @@
+{
+  "clientId": "ESP8266",
+  "timestamp": 1700163877571,
+  "eventType": "connected",
+  "sessionIdentifier": "0e6ae8b2-63a6-4e12-ac13-0342d95a30aa",
+  "principalIdentifier": "7ae90906b85593c76906abd77099a8744c3d279712e7dc47b1688cdbfbef87e8",
+  "ipAddress": "83.252.118.112",
+  "versionNumber": 0
+}

@@ -63,7 +63,7 @@
     <p> Third party services used:
         <ul>
             <li>Discord Webhook to receive ESP Connected/disconnected-notifications</li>
-            <li>Visualizing the data using Graphana, it could be done in AWS but it would generate a cost which is why i choose to do it in Graphana</li>
+            <li>Visualizing the data using grafana, it could be done in AWS but it would generate a cost which is why i choose to do it in grafana</li>
 
         </ul>
     </p>
@@ -117,13 +117,13 @@
             <li>Search for and click Lambda in aws</li>
             <li>Click create function</li>
             <li>Use Author from scratch and give the function i name, i chose SmhiToDb and runtime=Node.js 20.x</li>
-            <li>Click "Change default execution role" and use "Create a new role from AWS policy templates", give it a role name and the Policy templates = Simple microservice permissions. Then create the function</li>
+            <li>Click "Change default execution role" and use "Create a new role from AWS policy templates",<br> give it a role name and the Policy templates = Simple microservice permissions. Then create the function</li>
             <li>Replace the code source with <a href="./smhi.mjs">this</a></li>
             <li>Change tableName to name given in step 3 above</li>
             <li>Click deploy, then test and give a test event name. Click Save</li>
             <li>Click test again and check Execution result logs to see if it succeeded</li>
             <li>You should now see one set of data from device=SMHI in DynamoDb</li>
-            <img src="./SMHI.png" alt="">
+            <img src="./SMHI.png" alt="" style="width: 500px;">
         </ol>
 
 
@@ -133,7 +133,7 @@
         <li>Replace code source with <a href="./discord.mjs">this</a></li>
         <li>Deploy and configure/replace test event with <a href="./testEvent.txt">this</a> text</li>
         <li>Click test and you should get a notification in discord if all went well</li>
-        <img src="./discBot.png" alt="">
+        <img src="./discBot.png" alt="" style="width: 500px;">
     </ol>
 
     <h3 id="EventBridge">EventBridge Scheduler</h3>
@@ -178,7 +178,7 @@
         <li>Create new IAM role</li>
         <li>Click next and then create</li>
     </ol>
-    <h4>Create a Graphana account and connect to timestream</h4>
+    <h4>Create a grafana account and connect to timestream</h4>
     <ol>
         <li>Go to <a href="https://grafana.com/">grafana</a> and sign up for a free account</li>
         <li>Click menu->Connections and search for amazon timestream</li>
@@ -194,7 +194,7 @@
         <li>set default region to same as aws, note that not all regions has support for timestream in aws</li>
         <li>Chose database, table and measure from dropdown and click save and test</li>
         <li>You should now be able to visualize your data in grafana</li>
-        <img src="./grafana.jpg" alt="">
+        <img src="./grafana.jpg" alt="" style="width: 600px;">
     </ol>
 
 
