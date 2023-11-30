@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <h1>AWS IoT Core with Nodemcu V3-ESP8266</h1>
+    <hr>
+    <h2>Table of content</h2>
+    <hr>
+    <ul>
+        <li><a href="#about">About the project</a>
+            <ul>
+                <li><a href="#hardware">Hardware</a></li>
+            </ul>
+        </li>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#Instructions">Instructions</a>
+            <ul>
+                <li><a href="#Wiring">Wiring</a></li>
+                <li><a href="#Installation">Installation</a></li>
+                <li><a href="#Setup">Setup</a></li>
+                <li><a href="#DynamoDb">DynamoDb</a></li>
+                <li><a href="#Lambda">Lambda Functions</a></li>
+                <li><a href="#EventBridge">EventBridge Scheduler</a></li>
+                <li><a href="#Lifecycle">Lifecycle events</a></li>
+            </ul>
+        </li>
+        <li><a href="#Grafana">Grafana</a></li>
+    </ul>
+
+    <h2 id="about">About the project</h2>
+    <hr>
+    <p>This project aims to demonstrate how to use an esp8266 with a connected temperature sensor and hook it up to Amazon AWS in order to store and handle the data in various ways. It also pulls weather data from SMHI and stores it in DynamoDb as a separate device. Notifications are sent to my Discord when the device is connected or disconnected.
+        
+    </p>
+    <h3 id="hardware">Hardware</h3>
+    <p>
+        <ul>
+            <li>Nodemcu Esp8266 V3</li>
+            <li>DS18B20 temperature sensor</li>
+            <li>Cables</li>
+        </ul>
+    </p>
+    
+    <h2 id="overview">Overview</h2>
+    <hr>
+    <img src="./jonas.jpg" alt="Overview">
+    <p> AWS functionality used:
+        <ul>
+            <li>Save the data in DynamoDb</li>
+            <li>Use lamdbda function to get external data from the web in the same database</li>
+            <li>Using Amazon EventBridge Scheduler to run lambda function</li>
+            <li>Lifecycle events to send device status to Discord</li>
+            <li>Using timestream database to stream data to Grafana</li>
+        </ul> 
+
+    </p>
+
+    <p> Third party services used:
+        <ul>
+            <li>Discord Webhook to receive ESP Connected/disconnected-notifications</li>
+            <li>Visualizing the data using Graphana, it could be done in AWS but it would generate a cost which is why i choose to do it in Graphana</li>
+
+        </ul>
+    </p>
+
+    <h2 id="Instructions">Instructions</h2>
+    <hr>
+    <h3 id="Wiring">Wiring</h3>
+    <p>
+        (Sensor) -> (Esp8266) <br>
+        VCC -> 3V <br>
+        GND -> GND <br>
+        Signal -> D2
+    </p>
+    <img src="./IMG_4161.JPG" alt="">
+
+    <h3 id="Installation">Installation</h3>
+    <ol>
+        <li>Install the latest version of the Arduino IDE on your computer.</li>
+        <li>Install the ESP8266 board package in the Arduino IDE by following the instructions <a href="https://github.com/esp8266/Arduino#installing-with-boards-manager">here</a></li>
+        <li>Install the ArduinoJSON library in the Arduino IDE library manager.</li>
+        <li>Install the PubSubClient library in the Arduino IDE library manager.</li>
+        <li>Install DallasTemperature library and its dependencies in the Arduino IDE library manager.</li>
+    </ol>
+    <h3 id="Setup">Setup</h3>
+    <ol><li>Download the code for the microcontroller <a href="./Sketch/">here</a></li>
+        <li>Sign up to AWS, create a user and open the IoT console <a href="https://docs.aws.amazon.com/iot/latest/developerguide/setting-up.html">here</a></li>
+        <li>Follow the instructions <a href="https://how2electronics.com/connecting-esp8266-to-amazon-aws-iot-core-using-mqtt/#:~:text=Creating%20a-,Thing,-Now%20we%20need">here</a>  to create a thing and certificates</li>
+        <li>Edit <a href="./Sketch/secrets.h">secrets.h</a> and enter your THINGNAME, WIFI_SSID[], WIFI_PASSWORD[], MQTT_HOST[] and the 3 certificates created in the previous step</li>
+        <li>Upload you code to the microcontroller and check the Arduino IDE serial monitor that you get what you expect</li>
+        <li>Go to IoT core and "MQTT test client" subscribe to topic "esp8266/pub", wait a minute and make sure that you get the temperature and time.</li>
+        <p id="note">*To get the MQTT_HOST you need the endpoint, go to the settings part of AWS Dashboard. Copy the endpoint from there to MQTT_HOST.</p>
+    </ol>
+
+    <h3 id="DynamoDb">DynamoDb</h3>
+        <ol>
+            <li>Search for DynamoDb in aws and click it</li>
+            <li>Click on create table</li>
+            <li>Give the table a name, partition key and a sort key. I choose partitionKey=device_id (String) and sortKey=EpochTime (Number)</li>
+            <li>Go to IoT core->message routing->Rules and click Create Rule</li>
+            <li>Give the rule a name and click next</li>
+            <li>Enter sql statement: SELECT temperature, EpochTime, cast(topic(1) AS String) as device_id, FROM 'esp8266/pub'</li>
+            <li>Rule actions choose DynamoDbv2, table name = choose your newly created table from step 3</li>
+            <li>Create a IAM role, next and then create </li>
+            <li>You should now see data comming each minute in DynamoDb->Explore items->"YourTableName"</li>
+            <img src="./dynamo.png" alt="">
+        </ol>
+
+    <h3 id="Lambda">Lambda functions</h3>
+    <h4>Fetch weather data from external url (SMHI)</h4>
+        <ol>
+            <li>Search for and click Lambda in aws</li>
+            <li>Click create function</li>
+            <li>Use Author from scratch and give the function i name, i chose SmhiToDb and runtime=Node.js 20.x</li>
+            <li>Click "Change default execution role" and use "Create a new role from AWS policy templates", give it a role name and the Policy templates = Simple microservice permissions. Then create the function</li>
+            <li>Replace the code source with <a href="./smhi.mjs">this</a></li>
+            <li>Change tableName to name given in step 3 above</li>
+            <li>Click deploy, then test and give a test event name. Click Save</li>
+            <li>Click test again and check Execution result logs to see if it succeeded</li>
+            <li>You should now see one set of data from device=SMHI in DynamoDb</li>
+            <img src="./SMHI.png" alt="">
+        </ol>
+
+
+    <h4>Send message to Discord</h4>
+    <ol>
+        <li>Follow <a href="https://dev.to/josuebustos/aws-lambda-send-a-message-with-discord-webhooks-12fa#:~:text=with%20Python%20programming-,Create%20a%20Discord%20Server,-We%20will%20first">this guide</a></li>
+        <li>Replace code source with <a href="./discord.mjs">this</a></li>
+        <li>Deploy and configure/replace test event with <a href="./testEvent.txt">this</a> text</li>
+        <li>Click test and you should get a notification in discord if all went well</li>
+        <img src="./discBot.png" alt="">
+    </ol>
+
+    <h3 id="EventBridge">EventBridge Scheduler</h3>
+    <h4>Create a scheduler that runs smhi lamdbda function at regular interval</h4>
+    <ol>
+        <li>Search and click EventBridge</li>
+        <li>Click Schedules on left side under Scheduler and create new</li>
+        <li>Giv it a name and click recurring schedule</li>
+        <li>use cron-based schedule and choose how often it will run</li>
+        <li>Chose templated targets -> Aws lamdbda invoke, chose Lambda function from SMHI we created above from the dropdown</li>
+        <li>Create new role or use existing, next next save.</li>
+    </ol>
+
+    <h3 id="Lifecycle">Lifecycle events</h3>
+    <h4>Use Lifecycle events to trigger lambda function to send notifications to Discord</h4>
+    <p>Setup two rules in iot core, one for device connected and one for disconnected. <br>
+        SELECT * FROM '$aws/events/presence/connected/ESP8266' <br>
+        SELECT * FROM '$aws/events/presence/disconnected/ESP8266' <br>
+        Use action "Lambda: Send a message to a Lambda function" and choose the discord lambda function created earlier. <br>
+        You should now get notifications in discord each time the device boots up or shuts down. <br>
+        More info on Lifecycle events can be found <a href="https://docs.aws.amazon.com/iot/latest/developerguide/life-cycle-events.html">here</a>
+    </p>
+
+    <h3 id="Grafana">Grafana</h3>
+
+    <h4>Create a timestream database</h4>
+    <ol>
+        <li>Search and click Amazon Timestream in Aws, under resources click databases</li>
+        <li>Click create database</li>
+        <li>Chose standard datbase and give it a name</li>
+        <li>Click create database</li>
+        <li>Create a table</li>
+    </ol>
+
+    <h4>Create a rule that puts data to timestream db</h4>
+    <ol>
+        <li>Search and click IoT Core in Aws, under message routing click rules, then create rule</li>
+        <li>Give it a name and click next</li>
+        <li>Sql: SELECT * FROM '+/pub' and click next</li>
+        <li>Under action 1 select timestream table then choose database and table that we just created</li>
+        <li>Dimension name = device_id & Dimension value = ${topic(1)}</li>
+        <li>Create new IAM role</li>
+        <li>Click next and then create</li>
+    </ol>
+    <h4>Create a Graphana account and connect to timestream</h4>
+    <ol>
+        <li>Go to <a href="https://grafana.com/">grafana</a> and sign up for a free account</li>
+        <li>Click menu->Connections and search for amazon timestream</li>
+        <li>Install amazon timestream</li>
+        <li>In AWS search for and click IAM</li>
+        <li>Click users and Create user</li>
+        <li>Give a name and click next</li>
+        <li>Choose Attach policies directly and add "AmazonTimestreamReadOnlyAccess"</li>
+        <li>Click next and create the new user, then go in to that user and click the Security Credentials tab</li>
+        <li>Click create access keys and then choose "Application running outside AWS" and next, give it a descripton and next again</li>
+        <li>Write down the Access key and secret access key</li>
+        <li>Go back to Grafana and choose datasources for amazon timestream and add access key & secret key</li>
+        <li>set default region to same as aws, note that not all regions has support for timestream in aws</li>
+        <li>Chose database, table and measure from dropdown and click save and test</li>
+        <li>You should now be able to visualize your data in grafana</li>
+        <img src="./grafana.jpg" alt="">
+    </ol>
+
+
+
+
+    
+</body>
+</html>
