@@ -52,7 +52,7 @@
     <p> AWS functionality used:
         <ul>
             <li>Save the data in DynamoDb</li>
-            <li>Use lamdbda function to get external data from the web in the same database</li>
+            <li>Use Lambda function to get external data from the web in the same database</li>
             <li>Using Amazon EventBridge Scheduler to run Lambda function</li>
             <li>Lifecycle events to send device status to Discord</li>
             <li>Using timestream database to stream data to Grafana</li>
@@ -105,7 +105,7 @@
             <li>Go to IoT core->message routing->Rules and click Create Rule</li>
             <li>Give the rule a name and click next</li>
             <li>Enter sql statement: SELECT temperature, EpochTime, cast(topic(1) AS String) as device_id, FROM 'esp8266/pub'</li>
-            <li>Rule actions choose DynamoDbv2, table name = choose your newly created table from step 3</li>
+            <li>Rule actions choose DynamoDBv2, table name = choose your newly created table from step 3</li>
             <li>Create a IAM role, next and then create </li>
             <li>You should now see data comming each minute in DynamoDb->Explore items->"YourTableName"</li>
             <img src="./dynamo.png" alt="">
@@ -137,13 +137,13 @@
     </ol>
 
     <h3 id="EventBridge">EventBridge Scheduler</h3>
-    <h4>Create a scheduler that runs smhi lamdbda function at regular interval</h4>
+    <h4>Create a scheduler that runs smhi Lambda function at regular interval</h4>
     <ol>
         <li>Search and click EventBridge</li>
         <li>Click Schedules on left side under Scheduler and create new</li>
-        <li>Giv it a name and click recurring schedule</li>
+        <li>Give it a name and click recurring schedule</li>
         <li>use cron-based schedule and choose how often it will run</li>
-        <li>Choose templated targets -> Aws lamdbda invoke, choose Lambda function from SMHI we created above from the dropdown</li>
+        <li>Choose templated targets -> Aws Lambda invoke, choose Lambda function from SMHI we created above from the dropdown</li>
         <li>Create new role or use existing, next next save.</li>
     </ol>
 
