@@ -53,7 +53,7 @@
         <ul>
             <li>Save the data in DynamoDb</li>
             <li>Use lamdbda function to get external data from the web in the same database</li>
-            <li>Using Amazon EventBridge Scheduler to run lambda function</li>
+            <li>Using Amazon EventBridge Scheduler to run Lambda function</li>
             <li>Lifecycle events to send device status to Discord</li>
             <li>Using timestream database to stream data to Grafana</li>
         </ul> 
@@ -116,7 +116,7 @@
         <ol>
             <li>Search for and click Lambda in aws</li>
             <li>Click create function</li>
-            <li>Use Author from scratch and give the function i name, i chose SmhiToDb and runtime=Node.js 20.x</li>
+            <li>Use Author from scratch and give the function i name, i choose SmhiToDb and runtime=Node.js 20.x</li>
             <li>Click "Change default execution role" and use "Create a new role from AWS policy templates",<br> give it a role name and the Policy templates = Simple microservice permissions. Then create the function</li>
             <li>Replace the code source with <a href="./smhi.mjs">this</a></li>
             <li>Change tableName to name given in step 3 above</li>
@@ -129,7 +129,7 @@
 
     <h4>Send message to Discord</h4>
     <ol>
-        <li>Follow <a href="https://dev.to/josuebustos/aws-lambda-send-a-message-with-discord-webhooks-12fa#:~:text=with%20Python%20programming-,Create%20a%20Discord%20Server,-We%20will%20first">this guide</a></li>
+        <li>Follow <a href="https://dev.to/josuebustos/aws-Lambda-send-a-message-with-discord-webhooks-12fa#:~:text=with%20Python%20programming-,Create%20a%20Discord%20Server,-We%20will%20first">this guide</a></li>
         <li>Replace code source with <a href="./discord.mjs">this</a></li>
         <li>Deploy and configure/replace test event with <a href="./testEvent.txt">this</a> text</li>
         <li>Click test and you should get a notification in discord if all went well</li>
@@ -143,16 +143,16 @@
         <li>Click Schedules on left side under Scheduler and create new</li>
         <li>Giv it a name and click recurring schedule</li>
         <li>use cron-based schedule and choose how often it will run</li>
-        <li>Chose templated targets -> Aws lamdbda invoke, chose Lambda function from SMHI we created above from the dropdown</li>
+        <li>Choose templated targets -> Aws lamdbda invoke, choose Lambda function from SMHI we created above from the dropdown</li>
         <li>Create new role or use existing, next next save.</li>
     </ol>
 
     <h3 id="Lifecycle">Lifecycle events</h3>
-    <h4>Use Lifecycle events to trigger lambda function to send notifications to Discord</h4>
+    <h4>Use Lifecycle events to trigger Lambda function to send notifications to Discord</h4>
     <p>Setup two rules in iot core, one for device connected and one for disconnected. <br>
         SELECT * FROM '$aws/events/presence/connected/ESP8266' <br>
         SELECT * FROM '$aws/events/presence/disconnected/ESP8266' <br>
-        Use action "Lambda: Send a message to a Lambda function" and choose the discord lambda function created earlier. <br>
+        Use action "Lambda: Send a message to a Lambda function" and choose the discord Lambda function created earlier. <br>
         You should now get notifications in discord each time the device boots up or shuts down. <br>
         More info on Lifecycle events can be found <a href="https://docs.aws.amazon.com/iot/latest/developerguide/life-cycle-events.html">here</a>
     </p>
@@ -163,7 +163,7 @@
     <ol>
         <li>Search and click Amazon Timestream in Aws, under resources click databases</li>
         <li>Click create database</li>
-        <li>Chose standard datbase and give it a name</li>
+        <li>Choose standard datbase and give it a name</li>
         <li>Click create database</li>
         <li>Create a table</li>
     </ol>
@@ -192,7 +192,7 @@
         <li>Write down the Access key and secret access key</li>
         <li>Go back to Grafana and choose datasources for amazon timestream and add access key & secret key</li>
         <li>set default region to same as aws, note that not all regions has support for timestream in aws</li>
-        <li>Chose database, table and measure from dropdown and click save and test</li>
+        <li>Choose database, table and measure from dropdown and click save and test</li>
         <li>You should now be able to visualize your data in grafana</li>
         <img src="./grafana.jpg" alt="" style="width: 600px;">
     </ol>
