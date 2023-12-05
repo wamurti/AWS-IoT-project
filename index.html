@@ -30,6 +30,8 @@
             </ul>
         </li>
         <li><a href="#Grafana">Grafana</a></li>
+        <li><a href="#S3">S3 Bucket</a></li>
+        <li><a href="#security">Security</a></li>
     </ul>
 
     <h2 id="about">About the project</h2>
@@ -195,7 +197,42 @@
         <li>Choose database, table and measure from dropdown and click save and test</li>
         <li>You should now be able to visualize your data in grafana</li>
         <img src="./grafana.jpg" alt="" style="width: 600px;">
+        
     </ol>
+
+        <h3 id="S3">S3 Bucket</h3>
+    <p>
+        DynamoDB export to S3 allows you to export both full and incremental data from your DynamoDB table. Exports do not consume any read capacity units (RCUs) and have no impact on table performance and availability. The export file formats supported are DynamoDB JSON and Amazon Ion formats. You can also export data to an S3 bucket owned by another AWS account and to a different AWS region. Your data is always encrypted end-to-end.
+    </p>
+
+    <h3 id="security">Security and scalability</h3>
+    <p>
+        Best practices for security and scalability have not always been applied in this project since it has been done as a hobby project.
+        Some things worth mentioning regarding security is the following: <br>
+        <ul>
+            <li>Connections to the AWS IoT core is using TLS connections and authentication is
+                done with either x.509 certificates or Amazon Cognito. I have 
+                the keys in the device code as a seperate file, secrets.h, this is not a good practice.
+                In a production envoriment it would have been better to learn and use the AWS Key management service.
+                This would make it safer and also simplify the distribution of keys and certificates
+                to multiple devices.</li>
+            <li>Concider the physical devices security and location, can anyone access and tamper with it...</li>
+            <li>Another important security principle is "least privledged". AWS uses Roles and Policies
+                to grant privileges to devices and users. 
+                Make sure that every part can access only what it needs and nothing else ensures a higher level of security</li>
+        </ul>
+    </p>
+    <h4>Scalability</h4>
+    <p>
+        As many other cloud solutions AWS has the ability to be easily scale up if needed.
+You only have to pay for what is used. Lambda functions for example runs on demand and you only pay for the total runtime. 
+If needed you can also use provisioning and throttling to control the traffic and with that also the cost of your solution.
+    </p>
+
+
+    
+
+    
     <h3>Files can be found at my github repo <a href="https://github.com/wamurti/html-portfolio">here</a></h3>
     
     
